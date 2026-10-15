@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Mid-term 1 | Hung Vuong</title>
+  <style>
+    :root{
+      --bg1:#7ad7ff;
+      --bg2:#ffe58a;
+      --bg3:#d3f4ff;
+      --card:#ffffff;
+      --text:#1f2d4d;
+      --muted:#5c6b82;
+      --blue:#4aa8ff;
+      --pink:#ff7db8;
+      --yellow:#ffd166;
+      --green:#4ecdc4;
+      --red:#ff6b6b;
+      --purple:#9b8cff;
+      --shadow:0 18px 40px rgba(30, 60, 120, 0.16);
+    }
+
+    *{box-sizing:border-box;}
+    html, body{
+      margin:0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg1), var(--bg3), var(--bg2));
+      min-height:100vh;
+      color:var(--text);
+    }
+
+    body{
+      display:flex;
+      justify-content:center;
+      padding:32px 18px;
+      position:relative;
+      overflow-x:hidden;
+    }
+
+    .cloud{
+      position:absolute;
+      background:rgba(255,255,255,0.9);
+      border-radius:999px;
+      box-shadow: 30px 10px 0 rgba(255,255,255,0.8), 60px 18px 0 rgba(255,255,255,0.75);
+      opacity:0.8;
+    }
+    .cloud1{ width:150px; height:48px; top:40px; left:10%; animation: float1 10s ease-in-out infinite; }
+    .cloud2{ width:180px; height:56px; top:120px; right:12%; animation: float2 12s ease-in-out infinite; }
+    .cloud3{ width:120px; height:40px; bottom:170px; left:15%; animation: float3 11s ease-in-out infinite; }
+
+    @keyframes float1{
+      0%,100%{transform:translateX(0);}
+      50%{transform:translateX(18px);}
+    }
+    @keyframes float2{
+      0%,100%{transform:translateX(0);}
+      50%{transform:translateX(-16px);}
+    }
+    @keyframes float3{
+      0%,100%{transform:translateY(0);}
+      50%{transform:translateY(12px);}
+    }
+
+    .app{
+      width:min(980px, 100%);
+      position:relative;
+      z-index:1;
+    }
+
+    .header-bar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:20px;
+      padding:0 6px;
+    }
+
+    .badge{
+      background:rgba(255,255,255,0.8);
+      border:3px solid rgba(74,168,255,0.18);
+      color:#0f5ea8;
+      font-weight:800;
+      border-radius:999px;
+      padding:10px 18px;
+      box-shadow:0 8px 18px rgba(74,168,255,0.08);
+    }
+
+    .score-pill{
+      background:#fff4cc;
+      color:#b76b00;
+      font-weight:800;
+      border-radius:999px;
+      padding:10px 18px;
+      border:2px solid rgba(255,193,7,0.2);
+    }
+
+    .quiz-card{
+      background:rgba(255,255,255,0.8);
+      backdrop-filter: blur(4px);
+      border-radius:32px;
+      box-shadow:var(--shadow);
+      padding:28px 24px 24px;
+      border:3px solid rgba(255,255,255,0.5);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .quiz-card::before{
+      content:"";
+      position:absolute;
+      width:220px;height:220px;
+      right:-60px; top:-60px;
+      background:radial-gradient(circle, rgba(255,125,184,0.18), transparent 68%);
+      border-radius:50%;
+    }
+    .quiz-card::after{
+      content:"";
+      position:absolute;
+      width:230px;height:230px;
+      left:-70px; bottom:-80px;
+      background:radial-gradient(circle, rgba(74,168,255,0.18), transparent 70%);
+      border-radius:50%;
+    }
+
+    .title{
+      position:relative;
+      z-index:1;
+      text-align:center;
+      font-size:clamp(30px, 4vw, 52px);
+      margin:8px 0 18px;
+      color:#123a62;
+      font-weight:900;
+      letter-spacing:0.5px;
+    }
+
+    .title span{
+      display:inline-block;
+      animation: bounceTitle 2s ease-in-out infinite;
+    }
+    @keyframes bounceTitle{
+      0%,100%{transform:translateY(0);}
+      50%{transform:translateY(-7px);}
+    }
+
+    .screen{
+      position:relative;
+      z-index:1;
+      display:none;
+    }
+    .screen.active{
+      display:block;
+    }
+
+    .question-box{
+      background:linear-gradient(180deg, #ffffff, #f8fbff);
+      border-radius:26px;
+      border:2px solid rgba(74,168,255,0.15);
+      padding:18px 18px 10px;
+      margin-top:6px;
+    }
+
+    .question-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+
+    .question-number{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:linear-gradient(135deg, #ffbf69, #ff8a65);
+      color:white;
+      font-weight:800;
+      border-radius:999px;
+      padding:8px 14px;
+      font-size:14px;
+    }
+
+    .progress-wrap{
+      width:240px;
+      max-width:100%;
+      height:14px;
+      background:#eaf4ff;
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid rgba(74,168,255,0.15);
+    }
+
+    .progress{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background:linear-gradient(90deg, #4ecdc4, #58a6ff, #7d8fff);
+      transition:width 0.3s ease;
+    }
+
+    .question{
+      font-size:clamp(22px, 2.4vw, 34px);
+      font-weight:800;
+      line-height:1.5;
+      margin:18px 0 12px;
+      color:#1d3557;
+    }
+
+    .answers{
+      display:grid;
+      gap:14px;
+      margin-top:12px;
+    }
+
+    .answer{
+      width:100%;
+      border:none;
+      background:#f3f9ff;
+      border:2px solid #dfeeff;
+      border-radius:18px;
+      color:var(--text);
+      text-align:left;
+      padding:16px 18px;
+      font-size:20px;
+      font-weight:600;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      cursor:pointer;
+      transition:0.2s ease;
+      box-shadow:0 6px 16px rgba(74,168,255,0.05);
+    }
+    .answer:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 20px rgba(74,168,255,0.12);
+      border-color:#9ccfff;
+    }
+
+    .letter{
+      width:38px; height:38px;
+      border-radius:12px;
+      background:linear-gradient(135deg, #d4ecff, #bce0ff);
+      color:#0f5fae;
+      display:grid;
+      place-items:center;
+      font-size:18px;
+      font-weight:900;
+      flex-shrink:0;
+    }
+
+    .answer.selected{
+      background:#eaf6ff;
+      border-color:#3fa1ff;
+      box-shadow:0 12px 18px rgba(63,161,255,0.12);
+    }
+
+      .answer:disabled{
+        cursor:default;
+        opacity:1;
+      }
+
+    .answer.correct{
+      background:#eafaf2;
+      border-color:#2ccf76;
+    }
+
+    .answer.incorrect{
+      background:#fff0f0;
+      border-color:#ff6b6b;
+    }
+
+    .answer.correct .letter{
+      background:linear-gradient(135deg, #40d98d, #2ec98d);
+      color:#fff;
+    }
+
+    .answer.incorrect .letter{
+      background:linear-gradient(135deg, #ff7d7d, #ff5d5d);
+      color:#fff;
+    }
+
+    .check-feedback{
+      min-height:32px;
+      margin-top:14px;
+      font-size:18px;
+      font-weight:800;
+      color:var(--muted);
+    }
+
+    .check-feedback.correct{
+      color:#159957;
+    }
+
+    .check-feedback.incorrect{
+      color:#d64545;
+    }
+
+    .nav{
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      margin-top:22px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border:none;
+      border-radius:16px;
+      padding:16px 22px;
+      cursor:pointer;
+      font-weight:800;
+      font-size:18px;
+      transition:0.2s ease;
+    }
+
+    .btn:hover{
+      transform:translateY(-2px);
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg, #ff7a59, #ff5e88);
+      color:white;
+      box-shadow:0 12px 24px rgba(255, 98, 126, 0.25);
+    }
+
+    .btn.secondary{
+      background:#eaf4ff;
+      color:#0f5fae;
+      border:2px solid #d9ebff;
+    }
+
+    .result-box{
+      display:none;
+      text-align:center;
+      padding:20px 16px 8px;
+      position:relative;
+      z-index:1;
+    }
+
+    .result-box.active{
+      display:block;
+    }
+
+    .emoji{
+      font-size:52px;
+      animation: wiggle 1.2s ease-in-out infinite;
+      margin-bottom:8px;
+    }
+    @keyframes wiggle{
+      0%,100% {transform:rotate(0deg) scale(1);}
+      25% {transform:rotate(-7deg) scale(1.06);}
+      75% {transform:rotate(7deg) scale(1.06);}
+    }
+
+    .result-title{
+      font-size:clamp(28px, 4vw, 42px);
+      font-weight:900;
+      color:#123a62;
+      margin:8px 0;
+    }
+
+    .score-big{
+      font-size:clamp(46px, 7vw, 82px);
+      font-weight:900;
+      color:#ff7a59;
+      margin:10px 0;
+      text-shadow:0 8px 18px rgba(255,122,89,0.18);
+    }
+
+    .result-message{
+      font-size:20px;
+      color:var(--muted);
+      margin-bottom:18px;
+    }
+
+    .gift-box{
+      background:linear-gradient(135deg, #fff7d8, #fff1b8);
+      border:2px dashed #f6c65b;
+      border-radius:18px;
+      color:#8a5c00;
+      font-weight:700;
+      padding:12px 14px;
+      width:max-content;
+      max-width:100%;
+      margin:10px auto 18px;
+    }
+
+    .passage{
+      max-height:320px;
+      overflow:auto;
+      padding:16px 18px;
+      margin:14px 0;
+      background:#f5f9fc;
+      border-left:4px solid #ffd166;
+      border-radius:10px;
+      line-height:1.75;
+      font-size:17px;
+    }
+    .response-input{
+      width:100%;
+      min-height:115px;
+      resize:vertical;
+      border:2px solid #dfeeff;
+      border-radius:12px;
+      padding:14px;
+      color:var(--text);
+      font:inherit;
+      line-height:1.6;
+    }
+    .response-input.paragraph{min-height:220px;}
+    .writing-cues{line-height:1.8;}
+    .word-count{display:flex;justify-content:space-between;gap:12px;margin-top:7px;color:var(--muted);font-size:14px;font-weight:700;}
+    .word-count.in-range{color:#159957;}
+    .review-list{display:grid;gap:10px;margin-top:20px;text-align:left;}
+    .review-item{padding:14px 16px;background:#f8fbff;border-left:4px solid #4ecdc4;border-radius:10px;}
+    .review-item.incorrect{border-left-color:#ff6b6b;}
+    .review-item h3{margin:0 0 6px;font-size:17px;color:#1d3557;}
+    .review-item p{margin:4px 0;font-size:15px;line-height:1.5;}
+
+    @media (max-width: 640px){
+      .quiz-card{padding:20px 14px 18px;}
+      .answers{gap:12px;}
+      .answer{font-size:17px; padding:14px 14px;}
+      .nav{flex-direction:column;}
+      .btn{width:100%;}
+      .progress-wrap{width:100%;}
+    }
+  </style>
+</head>
+<body>
+  <div class="cloud cloud1"></div>
+  <div class="cloud cloud2"></div>
+  <div class="cloud cloud3"></div>
+
+  <div class="app">
+    <div class="header-bar">
+      <div class="badge">🎓 HUNG VUONG · ENGLISH</div>
+      <div class="score-pill">Answered: <span id="scoreDisplay">0/26</span></div>
+    </div>
+
+    <div class="quiz-card">
+      <h1 class="title"><span>✏️</span> English Mid-term Check <span>📘</span></h1>
+
+      <div id="quizScreen" class="screen active"></div>
+
+      <div id="resultBox" class="result-box">
+        <div class="emoji">🎉</div>
+        <div class="result-title">Your Results</div>
+        <div class="score-big" id="finalScore">0/4 points</div>
+        <div class="result-message" id="resultText">Your multiple-choice score will appear here.</div>
+        <div class="gift-box" id="giftBox">Written responses are ready for teacher review.</div>
+        <div class="review-list" id="reviewList"></div>
+        <div class="nav">
+          <button class="btn primary" onclick="restartQuiz()">Start again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const anxietyPassage = `When we feel anxious, we often give ourselves negative messages like that: “I can’t do this”, “I’m useless”, and “I’m going to fail”. It can be difficult but (21) ______ to replace these with positive thoughts such as: “This is just anxiety, it can’t harm me”, “relax, concentrate – it’s going to be okay”. Picturing how you’d like things to go can help you feel more (22) ______. Try to imagine yourself turning up to an exam feeling confident and relaxed. You turn over your paper, write (23) ______ what you do know and come away knowing you tried your best on the day. It can sometimes appear that your whole future depends on what grades you get. There can be a lot of pressure on young people to do well in exams which can cause a lot of stress and (24) ______. Remember that exams are important, but they are not the only way to a successful future. Lots of people achieve success in life without (25) ______ well at school.`;
+    const tetPassage = `<strong>Dear Linda,</strong><br><br>I hope this letter finds you well. I wanted to share with you how my family celebrates Tet, the Vietnamese New Year. It’s a special and joyful time for us.<br><br>Around two days before the new year, we gather to make <em>Chung</em> cakes. These are traditional rice cakes wrapped in leaves. We make about 10 <em>Chung</em> cakes for our family and close relatives. It’s fun because my cousins and I come together at our grandparents’ house. Besides <em>Chung</em> cakes, my grandmother prepares other Vietnamese dishes for us to enjoy during Tet.<br><br>To create a festive atmosphere at home, my parents buy peach blossoms or kumquat trees and flowers for decoration. The vibrant colours and sweet fragrance fill our house with joy.<br><br>How do you celebrate the new year in the UK? Please write back and share your own traditions and celebrations.<br><br>Wishing you a happy and prosperous new year!<br><br><strong>Warm regards,<br>Nam</strong>`;
+
+    const questions = [
+      { section: "II. Vocabulary, Grammar and Communication", skill: "Pronunciation", q: "Choose the word A, B, C or D which has the underlined part pronounced differently from the others.", options: ["university", "unit", "understand", "uniform"], underlineInitial: true, answer: 2, explanation: "The first sound in “understand” is /ʌ/. The other words begin with /juː/." },
+      { section: "II. Vocabulary, Grammar and Communication", skill: "Word stress", q: "Choose the word A, B, C or D which has a different stress pattern from the others.", options: ["exhilarating", "embarrassing", "performance", "brilliant"], answer: 3, explanation: "“Brilliant” is stressed on the first syllable. The other words are stressed later in the word." },
+      { section: "II. Vocabulary, Grammar and Communication", skill: "Vocabulary", q: "Some students prefer to learn information ……, memorizing it word for word without understanding the concepts.", options: ["by heart", "by rote", "by memory", "by chance"], answer: 1, explanation: "“Learn by rote” means to memorize something without understanding it." },
+      { section: "II. Vocabulary, Grammar and Communication", skill: "Vocabulary", q: "Watching the forest from the top of the mountain is an amazing ……", options: ["accident", "sight", "habit", "experience"], answer: 3, explanation: "“An amazing experience” describes the activity of watching the forest from the mountain." },
+      { section: "II. Vocabulary, Grammar and Communication", skill: "Opposites", q: "Choose A, B, C or D to indicate the word OPPOSITE in meaning to the underlined word: I have memorable experiences about my trip to Sentosa in Singapore.", highlight: "memorable", options: ["unpleasant", "exciting", "forgettable", "amazing"], answer: 2, explanation: "“Memorable” means worth remembering. Its opposite is “forgettable”." },
+      { section: "II. Vocabulary, Grammar and Communication", skill: "Synonyms", q: "Choose A, B, C or D to indicate the word that is CLOSEST in meaning to the underlined words: I can’t go out today because I have to look after my younger sister.", highlight: "look after", options: ["take care of", "get on with", "find out", "set up"], answer: 0, explanation: "“Look after” means to take care of someone." },
+      { section: "II. Vocabulary, Grammar and Communication", skill: "Error correction", q: "Choose A, B, C or D to show the underlined part that needs correction: The local authority tried to cut on private car use but they didn’t succeed.", highlight: "cut on", options: ["local", "cut on", "use", "succeed"], answer: 1, explanation: "The correct phrasal verb is “cut down on” (reduce)." },
+      { section: "II. Vocabulary, Grammar and Communication", skill: "Present perfect", q: "I ……… never ……… that film before.", options: ["did; watched", "has; watched", "have; watched", "was; watching"], answer: 2, explanation: "Use “have + past participle” with “I”: “I have never watched …”" },
+      { section: "II. Vocabulary, Grammar and Communication", skill: "Wish", q: "Mark wishes he ……… enough money to buy his favourite Lego.", options: ["had", "has", "was having", "will have"], answer: 0, explanation: "A present wish uses the past simple: “wishes he had”." },
+      { section: "II. Vocabulary, Grammar and Communication", skill: "Communication", q: "Do you ……… not showing this photo in your presentation?", options: ["wish", "mind", "decide", "think"], answer: 1, explanation: "The expression is “Do you mind + verb-ing?”" },
+      { section: "III. Reading", skill: "Gap 21", passage: anxietyPassage, q: "Choose the best answer for gap (21).", options: ["let", "try", "suggest", "allow"], answer: 1, explanation: "“It can be difficult but try to replace these …” gives advice and fits the sentence structure." },
+      { section: "III. Reading", skill: "Gap 22", passage: anxietyPassage, q: "Choose the best answer for gap (22).", options: ["positive", "sad", "tense", "stressful"], answer: 0, explanation: "The passage describes replacing negative messages with positive thoughts." },
+      { section: "III. Reading", skill: "Gap 23", passage: anxietyPassage, q: "Choose the best answer for gap (23).", options: ["up", "on", "out", "down"], answer: 3, explanation: "“Write down” means to record something in writing." },
+      { section: "III. Reading", skill: "Gap 24", passage: anxietyPassage, q: "Choose the best answer for gap (24).", options: ["anxiety", "happiness", "delighted", "pleasant"], answer: 0, explanation: "“Anxiety” is a noun that fits the phrase “stress and anxiety”." },
+      { section: "III. Reading", skill: "Gap 25", passage: anxietyPassage, q: "Choose the best answer for gap (25).", options: ["to do", "doing", "did", "do"], answer: 1, explanation: "After the preposition “without”, use a verb ending in -ing: “without doing well”." },
+      { section: "III. Reading", skill: "True or False", passage: tetPassage, type: "truefalse", q: "Nam’s family makes Chung cakes two days after the new year.", options: ["True", "False"], answer: 1, explanation: "False. The letter says they make the cakes around two days before the new year." },
+      { section: "III. Reading", skill: "True or False", passage: tetPassage, type: "truefalse", q: "Nam and his cousins gather at their uncle’s house to make Chung cakes.", options: ["True", "False"], answer: 1, explanation: "False. They gather at their grandparents’ house." },
+      { section: "III. Reading", skill: "True or False", passage: tetPassage, type: "truefalse", q: "Nam’s younger sister prepares other typical Vietnamese dishes for their family during Tet.", options: ["True", "False"], answer: 1, explanation: "False. Nam’s grandmother prepares the other Vietnamese dishes." },
+      { section: "III. Reading", skill: "True or False", passage: tetPassage, type: "truefalse", q: "Nam’s parents buy peach blossoms or kumquat trees and flowers to decorate their house during Tet.", options: ["True", "False"], answer: 0, explanation: "True. The letter says his parents buy these decorations for the house." },
+      { section: "III. Reading", skill: "True or False", passage: tetPassage, type: "truefalse", q: "Nam expects his pen pal to share about his/her traditions and celebrations.", options: ["True", "False"], answer: 0, explanation: "True. He asks Linda to write back and share her traditions and celebrations." },
+      { section: "IV. Writing", skill: "Sentence transformation", type: "writing", q: "The lessons became difficult. We tried harder.", instruction: "Rewrite the sentence using double comparatives.", placeholder: "Write one complete sentence." },
+      { section: "IV. Writing", skill: "Sentence transformation", type: "writing", q: "What a pity! I can’t answer this question.", instruction: "Rewrite the sentence using “wish”.", placeholder: "Write one complete sentence." },
+      { section: "IV. Writing", skill: "Sentence transformation", type: "writing", q: "My parents last went to Ho Chi Minh City in 2013.", instruction: "Rewrite the sentence in the present perfect.", placeholder: "Write one complete sentence." },
+      { section: "IV. Writing", skill: "Phrasal verbs", type: "writing", q: "I decided to reduce fast food and start cooking my own meals.", instruction: "Rewrite the sentence using a phrasal verb.", placeholder: "Write one complete sentence." },
+      { section: "IV. Writing", skill: "Word order", type: "writing", q: "continues / he / immediately / must leave / if he / making noise", instruction: "Rearrange the words to make a meaningful sentence.", placeholder: "Write one complete sentence." },
+      { section: "IV. Writing", skill: "Paragraph writing", type: "paragraph", q: "In about 100–120 words, write a paragraph about school days in the past and now.", instruction: "Use the questions below as cues.", cues: ["School time (morning / afternoon / …)", "School subjects (Math / English / IT / …)", "Leisure-time activities (marbles / hide-and-seek / tug of war / …)", "Means of transport to school (barefoot / bikes / cars / …)"], placeholder: "Write your paragraph here." }
+    ];
+
+    let current = 0;
+    let selected = Array(questions.length).fill(null);
+
+    const quizScreen = document.getElementById("quizScreen");
+    const scoreDisplay = document.getElementById("scoreDisplay");
+    const resultBox = document.getElementById("resultBox");
+    const finalScore = document.getElementById("finalScore");
+    const resultText = document.getElementById("resultText");
+    const giftBox = document.getElementById("giftBox");
+
+    function renderQuestion() {
+      const q = questions[current];
+      const sectionQuestions = questions.filter(item => item.section === q.section);
+      const sectionNumber = sectionQuestions.indexOf(q) + 1;
+      const progress = ((current + 1) / questions.length) * 100;
+      const selectedAnswer = selected[current];
+      const isWriting = q.type === "writing" || q.type === "paragraph";
+      const passage = q.passage ? `<div class="passage">${q.passage}</div>` : "";
+      const prompt = q.highlight
+        ? escapeHTML(q.q).replace(escapeHTML(q.highlight), `<u>${escapeHTML(q.highlight)}</u>`)
+        : escapeHTML(q.q);
+      const content = isWriting
+        ? `<p class="writing-label">${escapeHTML(q.instruction)}</p>
+           ${q.cues ? `<ul class="writing-cues">${q.cues.map(cue => `<li>${escapeHTML(cue)}</li>`).join("")}</ul>` : ""}
+           <textarea class="response-input ${q.type === "paragraph" ? "paragraph" : ""}" id="writingInput" placeholder="${escapeHTML(q.placeholder)}">${escapeHTML(selectedAnswer || "")}</textarea>
+           ${q.type === "paragraph" ? `<div class="word-count" id="wordCount"><span>0 words</span><span>Target: 100–120 words</span></div>` : ""}`
+        : `<div class="answers">
+            ${q.options.map((option, i) => {
+              const displayedOption = q.underlineInitial
+                ? `<u>${escapeHTML(option.slice(0, 1))}</u>${escapeHTML(option.slice(1))}`
+                : escapeHTML(option);
+              return `<button class="answer ${selectedAnswer === i ? "selected" : ""}" data-index="${i}" aria-pressed="${selectedAnswer === i}">
+                <span class="letter">${q.type === "truefalse" ? (i === 0 ? "T" : "F") : String.fromCharCode(65 + i)}</span>
+                <span>${displayedOption}</span>
+              </button>`;
+            }).join("")}
+          </div>`;
+      quizScreen.innerHTML = `
+        <div class="question-box">
+          <div class="question-top">
+            <div class="question-number">${escapeHTML(q.section)} · ${sectionNumber}/${sectionQuestions.length}</div>
+            <div class="progress-wrap">
+              <div class="progress" style="width:${progress}%"></div>
+            </div>
+          </div>
+
+          ${passage}
+          <div class="question">${prompt}</div>
+          ${content}
+
+          <div class="nav">
+            <button class="btn secondary" ${current === 0 ? "disabled" : ""} onclick="prevQuestion()">← Previous</button>
+            <button class="btn primary" onclick="nextQuestion()">${current === questions.length - 1 ? "Submit test" : "Next question →"}</button>
+          </div>
+        </div>
+      `;
+
+      quizScreen.querySelectorAll(".answer").forEach(button => {
+        button.addEventListener("click", () => chooseAnswer(Number(button.dataset.index)));
+      });
+      const writingInput = document.getElementById("writingInput");
+      if (writingInput) {
+        writingInput.addEventListener("input", () => {
+          selected[current] = writingInput.value;
+          updateAnsweredCount();
+          if (q.type === "paragraph") updateWordCount(writingInput.value);
+        });
+        if (q.type === "paragraph") updateWordCount(selectedAnswer || "");
+      }
+      quizScreen.classList.add("active");
+      resultBox.classList.remove("active");
+    }
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+    }
+
+    function updateAnsweredCount() {
+      const answered = selected.filter(answer => typeof answer === "string" ? answer.trim() : answer !== null).length;
+      scoreDisplay.textContent = `${answered}/${questions.length}`;
+    }
+
+    function updateWordCount(text) {
+      const words = text.trim().match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g) || [];
+      const counter = document.getElementById("wordCount");
+      if (!counter) return;
+      counter.firstElementChild.textContent = `${words.length} words`;
+      counter.classList.toggle("in-range", words.length >= 100 && words.length <= 120);
+    }
+
+    function chooseAnswer(index) {
+      selected[current] = index;
+      updateAnsweredCount();
+      renderQuestion();
+    }
+
+    function prevQuestion() {
+      if (current > 0) {
+        current--;
+        renderQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      if (current < questions.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        finishQuiz();
+      }
+    }
+
+    function finishQuiz() {
+      const unanswered = selected.filter(answer => answer === null || (typeof answer === "string" && !answer.trim())).length;
+      if (unanswered && !confirm(`You have ${unanswered} unanswered question${unanswered === 1 ? "" : "s"}. Submit your test anyway?`)) return;
+
+      const objectiveQuestions = questions.filter(question => question.type !== "writing" && question.type !== "paragraph");
+      const correctCount = objectiveQuestions.reduce((total, question) => {
+        const questionIndex = questions.indexOf(question);
+        return total + (selected[questionIndex] === question.answer ? 1 : 0);
+      }, 0);
+      const points = (correctCount * 0.2).toFixed(1).replace(/\.0$/, "");
+      finalScore.textContent = `${points}/4 points`;
+      resultText.textContent = `${correctCount} of ${objectiveQuestions.length} multiple-choice questions correct.`;
+      giftBox.textContent = "Written responses are not auto-marked. Ask your teacher to review them.";
+      reviewList.innerHTML = questions.map((question, index) => {
+        const isWriting = question.type === "writing" || question.type === "paragraph";
+        const isCorrect = !isWriting && selected[index] === question.answer;
+        const studentAnswer = selected[index] === null || (typeof selected[index] === "string" && !selected[index].trim())
+          ? "No answer"
+          : isWriting
+            ? selected[index]
+            : question.type === "truefalse"
+              ? question.options[selected[index]]
+              : `${String.fromCharCode(65 + selected[index])}. ${question.options[selected[index]]}`;
+        const correctAnswer = isWriting
+          ? "Teacher review"
+          : question.type === "truefalse"
+            ? question.options[question.answer]
+            : `${String.fromCharCode(65 + question.answer)}. ${question.options[question.answer]}`;
+        const status = isWriting ? "Written response" : isCorrect ? "Correct" : "Review";
+        const explanation = question.explanation ? `<p>${escapeHTML(question.explanation)}</p>` : "";
+        return `<article class="review-item ${!isWriting && !isCorrect ? "incorrect" : ""}">
+          <h3>${escapeHTML(question.section)} · Question ${index + 1}: ${escapeHTML(question.q)}</h3>
+          <p><strong>${status}:</strong> ${isWriting ? correctAnswer : `Correct answer: ${escapeHTML(correctAnswer)}`}</p>
+          <p><strong>Your answer:</strong> ${escapeHTML(studentAnswer)}</p>${explanation}
+        </article>`;
+      }).join("");
+
+      quizScreen.classList.remove("active");
+      resultBox.classList.add("active");
+      scoreDisplay.textContent = `${selected.filter(answer => answer !== null && (typeof answer !== "string" || answer.trim())).length}/${questions.length}`;
+    }
+
+    function restartQuiz() {
+      current = 0;
+      selected = Array(questions.length).fill(null);
+      updateAnsweredCount();
+      renderQuestion();
+    }
+
+    renderQuestion();
+  </script>
+</body>
+</html>
