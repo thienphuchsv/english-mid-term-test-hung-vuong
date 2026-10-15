@@ -73,6 +73,17 @@ body{display:flex;justify-content:center;padding:32px 18px;position:relative;ove
 .lb tr.me td{background:#fff4cc}
 .lb .rank{width:40px;font-weight:900}
 .lb-note{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+.admin-table{width:100%;border-collapse:collapse;font-size:14px}
+.admin-table th,.admin-table td{text-align:left;padding:9px 7px;border-bottom:1px solid #e6f0fb;vertical-align:top}
+.admin-table th{color:var(--muted);font-size:12px}
+.admin-table td{font-weight:600}
+.admin-detail{margin-top:18px;text-align:left}
+.admin-detail-item{padding:14px 12px;border-top:1px solid #e6f0fb}
+.admin-detail-item p{margin:6px 0;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.admin-detail-item.correct{border-left:4px solid #2ccf76}
+.admin-detail-item.incorrect{border-left:4px solid #ff6b6b}
+.admin-detail-item.unanswered{border-left:4px solid #c9d6e4}
+.admin-detail-item.manual_review{border-left:4px solid #ffd166}
 .review-list{display:grid;gap:10px;margin-top:20px;text-align:left}
 .review-item{padding:14px 16px;background:#f8fbff;border-left:4px solid #4ecdc4;border-radius:10px}
 .review-item.incorrect{border-left-color:#ff6b6b}
@@ -134,8 +145,17 @@ body{display:flex;justify-content:center;padding:32px 18px;position:relative;ove
         <input id="nameInput" type="text" maxlength="30" placeholder="Your full name" autocomplete="off" />
         <div class="name-err" id="nameErr"></div>
         <button class="btn primary" onclick="startQuiz()">🚀 Start the test</button>
-        <div id="startLb" style="margin-top:22px"></div>
+        <p><a class="btn secondary small" href="?admin=1">Admin</a></p>
+        <div id="startLeaderboard" style="margin-top:22px"></div>
       </div>
+    </div>
+
+    <div id="adminScreen" class="screen">
+      <h2 style="color:#123a62;text-align:center">📋 Student submissions</h2>
+      <p style="text-align:center;color:var(--bad)">Anyone with this link can view student names, scores, and answers.</p>
+      <div style="overflow-x:auto"><div id="adminSubmissions">Loading submissions...</div></div>
+      <div id="adminDetails" class="admin-detail"></div>
+      <div class="nav"><a class="btn secondary" href="index.html">← Back to test</a></div>
     </div>
 
     <div id="quizScreen" class="screen"></div>
@@ -157,6 +177,7 @@ body{display:flex;justify-content:center;padding:32px 18px;position:relative;ove
         <div class="panel">
           <h2>🏆 Top 10 highest scores</h2>
           <div id="leaderboard"></div>
+          <p id="saveStatus" style="text-align:center;color:var(--muted)">Your result will be sent when you submit.</p>
         </div>
       </div>
       <h2 style="margin:26px 0 0;color:#123a62">📝 Review your answers</h2>
@@ -179,7 +200,7 @@ body{display:flex;justify-content:center;padding:32px 18px;position:relative;ove
 </div>
 
 <script>
-const LB_KEY = "hungvuong_english_midterm1_leaderboard";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzq85vdWXKp8eIyF4Qx21CsHRSn0HyqcHkJo_xdF9XXmVWQY2dQXvlkEpS3iIsybU3/exec";
 const POINT_PER_Q = 0.2;
 const anxietyPassage = `When we feel anxious, we often give ourselves negative messages like that: “I can’t do this”, “I’m useless”, and “I’m going to fail”. It can be difficult but (21) ______ to replace these with positive thoughts such as: “This is just anxiety, it can’t harm me”, “relax, concentrate – it’s going to be okay”. Picturing how you’d like things to go can help you feel more (22) ______. Try to imagine yourself turning up to an exam feeling confident and relaxed. You turn over your paper, write (23) ______ what you do know and come away knowing you tried your best on the day. It can sometimes appear that your whole future depends on what grades you get. There can be a lot of pressure on young people to do well in exams which can cause a lot of stress and (24) ______. Remember that exams are important, but they are not the only way to a successful future. Lots of people achieve success in life without (25) ______ well at school.`;
 const tetPassage = `<strong>Dear Linda,</strong><br><br>I hope this letter finds you well. I wanted to share with you how my family celebrates Tet, the Vietnamese New Year. It’s a special and joyful time for us.<br><br>Around two days before the new year, we gather to make <em>Chung</em> cakes. These are traditional rice cakes wrapped in leaves. We make about 10 <em>Chung</em> cakes for our family and close relatives. It’s fun because my cousins and I come together at our grandparents’ house. Besides <em>Chung</em> cakes, my grandmother prepares other Vietnamese dishes for us to enjoy during Tet.<br><br>To create a festive atmosphere at home, my parents buy peach blossoms or kumquat trees and flowers for decoration. The vibrant colours and sweet fragrance fill our house with joy.<br><br>How do you celebrate the new year in the UK? Please write back and share your own traditions and celebrations.<br><br>Wishing you a happy and prosperous new year!<br><br><strong>Warm regards,<br>Nam</strong>`;
@@ -227,22 +248,101 @@ function escapeHTML(v) {
   return String(v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 }
 function show(id) {
-  ["nameScreen", "quizScreen", "resultBox"].forEach(s => $(s).classList.toggle("active", s === id));
+  ["nameScreen", "quizScreen", "resultBox", "adminScreen"].forEach(s => $(s).classList.toggle("active", s === id));
 }
 
-/* ---------- Leaderboard (stored in this browser) ---------- */
-function loadLB() { try { return JSON.parse(localStorage.getItem(LB_KEY)) || []; } catch (e) { return []; } }
-function saveLB(list) { try { localStorage.setItem(LB_KEY, JSON.stringify(list)); } catch (e) {} }
-function sortLB(list) { return list.sort((a, b) => b.correct - a.correct || a.seconds - b.seconds || a.at - b.at); }
-function fmtTime(s) { return `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s`; }
-function leaderboardHTML(highlightAt) {
-  const top = sortLB(loadLB()).slice(0, 10);
-  if (!top.length) return `<p style="text-align:center;color:var(--muted)">No one has submitted yet. Be the first! 🌟</p>`;
-  const medal = ["🥇", "🥈", "🥉"];
-  return `<table class="lb"><thead><tr><th>#</th><th>Name</th><th>Score</th><th>Time</th></tr></thead><tbody>${top.map((r, i) =>
-    `<tr class="${r.at === highlightAt ? "me" : ""}"><td class="rank">${medal[i] || i + 1}</td><td>${escapeHTML(r.name)}</td><td>${r.points}/4</td><td>${fmtTime(r.seconds)}</td></tr>`).join("")}</tbody></table>
-    <div class="lb-note">Ranked by highest score. Ties are broken by faster time.</div>`;
+/* ---------- Send submitted result to Google Apps Script ---------- */
+async function sendResultToAppsScript(result) {
+  if (!APPS_SCRIPT_URL) throw new Error("Apps Script URL is not configured yet.");
+  await fetch(APPS_SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=UTF-8" },
+    body: JSON.stringify(result)
+  });
 }
+function renderLeaderboard(target, results) {
+  if (!results.length) {
+    target.innerHTML = `<p style="text-align:center;color:var(--muted)">No submitted tests yet.</p>`;
+    return;
+  }
+  const medals = ["🥇", "🥈", "🥉"];
+  target.innerHTML = `<table class="lb"><thead><tr><th>#</th><th>Name</th><th>Score</th><th>Time</th></tr></thead><tbody>${results.map((result, index) =>
+    `<tr><td class="rank">${medals[index] || index + 1}</td><td>${escapeHTML(result.name)}</td><td>${Number(result.score)}/${Number(result.maxScore)}</td><td>${fmtTime(Number(result.durationSeconds) || 0)}</td></tr>`).join("")}</tbody></table>
+    <div class="lb-note">Loaded from the class spreadsheet. Ties are ranked by faster time.</div>`;
+}
+function requestAppsScript(parameters, onSuccess, onFailure) {
+  const callbackName = `leaderboardCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const script = document.createElement("script");
+  const endpoint = new URL(APPS_SCRIPT_URL);
+  Object.entries(parameters).forEach(([key, value]) => endpoint.searchParams.set(key, value));
+  endpoint.searchParams.set("callback", callbackName);
+  let timeout;
+  const cleanup = () => {
+    clearTimeout(timeout);
+    script.remove();
+    delete window[callbackName];
+  };
+  const fail = () => {
+    cleanup();
+    onFailure();
+  };
+  timeout = setTimeout(fail, 15000);
+  window[callbackName] = response => {
+    cleanup();
+    onSuccess(response);
+  };
+  script.onerror = fail;
+  script.src = endpoint.toString();
+  document.head.appendChild(script);
+}
+function loadLeaderboard(targetId) {
+  const target = $(targetId);
+  if (!APPS_SCRIPT_URL) { target.textContent = "Leaderboard connection is not configured."; return; }
+  target.textContent = "Loading leaderboard...";
+  requestAppsScript({ action: "leaderboard" }, response => {
+    if (!response || !response.ok || !Array.isArray(response.results)) {
+      target.textContent = "Could not load the leaderboard.";
+      return;
+    }
+    renderLeaderboard(target, response.results);
+  }, () => { target.textContent = "Could not load the leaderboard. Check the Apps Script deployment."; });
+}
+function renderAdminSubmissions(results) {
+  const target = $("adminSubmissions");
+  if (!results.length) { target.textContent = "No student submissions yet."; return; }
+  target.innerHTML = `<table class="admin-table"><thead><tr><th>Student</th><th>Submitted</th><th>Score</th><th>Right</th><th>Wrong</th><th>Blank</th><th></th></tr></thead><tbody>${results.map(result =>
+    `<tr><td>${escapeHTML(result.name)}</td><td>${escapeHTML(fmtDateTime(result.submittedAt))}</td><td>${Number(result.score)}/${Number(result.maxScore)}</td><td>${Number(result.correctCount)}</td><td>${Number(result.incorrectCount)}</td><td>${Number(result.unansweredCount)}</td><td><button class="btn secondary small admin-detail-button" data-submission-id="${escapeHTML(result.submissionId)}">Details</button></td></tr>`).join("")}</tbody></table>`;
+  target.querySelectorAll(".admin-detail-button").forEach(button => {
+    button.addEventListener("click", () => loadAdminDetails(button.dataset.submissionId, results.find(result => result.submissionId === button.dataset.submissionId)));
+  });
+}
+function loadAdminSubmissions() {
+  const target = $("adminSubmissions");
+  if (!APPS_SCRIPT_URL) { target.textContent = "Apps Script URL is not configured."; return; }
+  target.textContent = "Loading submissions...";
+  requestAppsScript({ action: "adminList" }, response => {
+    if (!response || !response.ok || !Array.isArray(response.results)) { target.textContent = "Could not load submissions."; return; }
+    renderAdminSubmissions(response.results);
+  }, () => { target.textContent = "Could not load submissions. Check the Apps Script deployment."; });
+}
+function fmtDateTime(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value || "") : date.toLocaleString();
+}
+function loadAdminDetails(submissionId, submission) {
+  const target = $("adminDetails");
+  target.textContent = "Loading answer history...";
+  requestAppsScript({ action: "adminDetails", submissionId }, response => {
+    if (!response || !response.ok || !Array.isArray(response.answers)) { target.textContent = "Could not load this submission's answers."; return; }
+    const statusText = { correct: "Correct", incorrect: "Incorrect", unanswered: "Unanswered", manual_review: "Needs manual review" };
+    target.innerHTML = `<h3>${escapeHTML(submission.name)} · ${escapeHTML(fmtDateTime(submission.submittedAt))}</h3><p>Score: <strong>${Number(submission.score)}/${Number(submission.maxScore)}</strong> · Correct: ${Number(submission.correctCount)} · Incorrect: ${Number(submission.incorrectCount)} · Unanswered: ${Number(submission.unansweredCount)} · Time: ${fmtTime(Number(submission.durationSeconds) || 0)}</p>${response.answers.map(answer => {
+      const status = statusText[answer.status] ? answer.status : "unanswered";
+      return `<article class="admin-detail-item ${status}"><strong>Question ${Number(answer.questionNumber)} · ${escapeHTML(answer.section)} · ${escapeHTML(statusText[status])}</strong><p>${escapeHTML(answer.question)}</p><p><strong>Choices:</strong> ${escapeHTML(answer.options)}</p><p><strong>Student answer:</strong> ${escapeHTML(answer.selectedAnswer || "No answer")}</p>${answer.correctAnswer ? `<p><strong>Correct answer:</strong> ${escapeHTML(answer.correctAnswer)}</p>` : ""}</article>`;
+    }).join("")}`;
+  }, () => { target.textContent = "Could not load this submission's answers. Check the Apps Script deployment."; });
+}
+function fmtTime(s) { return `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s`; }
 
 /* ---------- Start ---------- */
 function startQuiz() {
@@ -326,7 +426,7 @@ $("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") startQu
 function confirmSubmit() { closeConfirm(); finishQuiz(); }
 
 /* ---------- Submit and results ---------- */
-function finishQuiz() {
+async function finishQuiz() {
   if (submitted) return;
   submitted = true;
   const seconds = Math.round((Date.now() - startTime) / 1000);
@@ -339,8 +439,47 @@ function finishQuiz() {
   const maxPoints = +(total * POINT_PER_Q).toFixed(1);
   const at = Date.now();
 
-  const list = loadLB(); list.push({ name: player, points, correct, seconds, at });
-  saveLB(sortLB(list).slice(0, 100));
+  try {
+    const submissionId = `${at}-${Math.random().toString(36).slice(2, 8)}`;
+    const answers = questions.map((q, i) => {
+      const answer = selected[i];
+      const written = isWritingQ(q);
+      const unanswered = isBlank(answer);
+      const isCorrect = !written && !unanswered && answer === q.answer;
+      return {
+        questionNumber: i + 1,
+        section: q.section,
+        skill: q.skill || "",
+        type: q.type || "multiple_choice",
+        question: q.q,
+        options: (q.options || []).join(" | "),
+        selectedIndex: written || unanswered ? "" : answer,
+        selectedAnswer: unanswered ? "" : written ? answer : q.options[answer],
+        correctAnswer: written ? "" : q.options[q.answer],
+        status: unanswered ? "unanswered" : written ? "manual_review" : isCorrect ? "correct" : "incorrect"
+      };
+    });
+    const unansweredCount = answers.filter(answer => answer.status === "unanswered").length;
+    const manualReviewCount = answers.filter(answer => answer.status === "manual_review").length;
+    await sendResultToAppsScript({
+      submissionId,
+      name: player,
+      startedAt: new Date(startTime).toISOString(),
+      submittedAt: new Date(at).toISOString(),
+      durationSeconds: seconds,
+      score: points,
+      maxScore: maxPoints,
+      correctCount: correct,
+      incorrectCount: wrong,
+      unansweredCount,
+      manualReviewCount,
+      totalQuestionCount: questions.length,
+      answers
+    });
+    $("saveStatus").textContent = "Submission sent to Apps Script. Please confirm it appears in the sheet.";
+  } catch (error) {
+    $("saveStatus").textContent = "Not sent to Google Sheets. The Apps Script URL is not configured; please tell your teacher.";
+  }
 
   const pct = Math.round((correct / total) * 100);
   const [emoji, msg] = pct >= 90 ? ["🏆", "Excellent! You did a great job!"] : pct >= 70 ? ["🎉", "Well done! A little more practice and you will be perfect!"] : pct >= 50 ? ["😊", "Not bad! Check the questions you missed below."] : ["💪", "Don't give up! Review the answers and keep practising."];
@@ -356,8 +495,6 @@ function finishQuiz() {
   $("donut").style.background = `conic-gradient(${stops.join(",")})`;
   $("donut").dataset.label = pct + "%";
   $("legend").innerHTML = parts.map(p => `<div><i style="background:${p[2]}"></i>${p[0]}: ${p[1]} questions (${Math.round(p[1] / total * 100)}%)</div>`).join("");
-  $("leaderboard").innerHTML = leaderboardHTML(at);
-
   $("reviewList").innerHTML = questions.map((q, i) => {
     const ans = selected[i], writingQ = isWritingQ(q), ok = !writingQ && ans === q.answer;
     const cls = writingQ ? "written" : ok ? "" : "incorrect";
@@ -378,6 +515,7 @@ function finishQuiz() {
 
   $("submitTopBtn").style.display = "none";
   show("resultBox");
+  loadLeaderboard("leaderboard");
   celebrate();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -388,7 +526,7 @@ function restartQuiz() {
   $("nameInput").value = ""; $("nameErr").textContent = "";
   $("playerPill").style.display = "none"; $("submitTopBtn").style.display = "none";
   updateAnsweredCount();
-  $("startLb").innerHTML = `<h2 style="color:#123a62">🏆 Top 10</h2>` + leaderboardHTML();
+  loadLeaderboard("startLeaderboard");
   show("nameScreen");
 }
 /* sparkle effects */
@@ -419,7 +557,12 @@ function celebrate() {
     box.appendChild(st);
   }
 })();
-restartQuiz();
+if (new URLSearchParams(window.location.search).get("admin") === "1") {
+  show("adminScreen");
+  loadAdminSubmissions();
+} else {
+  restartQuiz();
+}
 </script>
 </body>
 </html>
